@@ -141,10 +141,10 @@ export const Login: React.FC = () => {
               </h3>
             </div>
             <p className="text-xs text-slate-400 mb-4">
-              Ingrese manualmente cualquiera de las siguientes cuentas con la contraseña correspondiente:
+              Ingrese manualmente cualquiera de las siguientes cuentas autorizadas:
             </p>
 
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono mb-3">
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               {mockUsers.map((user) => (
                 <div key={user.id} className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center justify-between">
                   <span className="text-cyan-400 font-semibold">{user.username}</span>
@@ -152,12 +152,8 @@ export const Login: React.FC = () => {
                 </div>
               ))}
             </div>
-
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-              <span>CONTRASEÑA MOCK:</span>
-              <span className="text-amber-400 font-semibold bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">sinuy123</span>
-            </div>
           </div>
+
 
         </div>
 
