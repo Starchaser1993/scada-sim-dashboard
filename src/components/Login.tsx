@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, Lock, User as UserIcon, Activity, AlertCircle, ArrowRight, Cpu, Sparkles } from 'lucide-react';
+import { ShieldCheck, Lock, User as UserIcon, Activity, AlertCircle, Cpu, Sparkles } from 'lucide-react';
 
 export const Login: React.FC = () => {
-  const { login, loginAsMockUser, mockUsers } = useAuth();
+  const { login, mockUsers } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -14,14 +14,6 @@ export const Login: React.FC = () => {
     const result = login(username, password);
     if (!result.success) {
       setError(result.error || 'Credenciales no válidas');
-    }
-  };
-
-  const handleQuickLogin = (u: string) => {
-    setError(null);
-    const result = loginAsMockUser(u);
-    if (!result.success) {
-      setError(result.error || 'Error al iniciar sesión');
     }
   };
 
@@ -140,43 +132,35 @@ export const Login: React.FC = () => {
             </form>
           </div>
 
-          {/* Quick access mock user selector */}
+          {/* Manual Access Reference Box */}
           <div className="scada-panel rounded-2xl p-6 border border-slate-800">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-                Usuarios Predefinidos (1-Click Login)
+                Credenciales de Acceso (Ingreso Manual)
               </h3>
             </div>
+            <p className="text-xs text-slate-400 mb-4">
+              Ingrese manualmente cualquiera de las siguientes cuentas con la contraseña correspondiente:
+            </p>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono mb-3">
               {mockUsers.map((user) => (
-                <button
-                  key={user.id}
-                  onClick={() => handleQuickLogin(user.username)}
-                  className="group p-3 rounded-xl bg-slate-900/70 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 text-left transition-all cursor-pointer relative overflow-hidden"
-                >
-                  <div className="flex items-center gap-2.5 mb-1">
-                    <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${user.avatarColor}`} />
-                    <span className="font-mono text-xs font-bold text-slate-200 group-hover:text-cyan-300">
-                      {user.username}
-                    </span>
-                  </div>
-
-                  <div className="text-[11px] text-slate-400 truncate">{user.name}</div>
-
-                  <div className="mt-2 flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1.5 border-t border-slate-800/80">
-                    <span className="truncate">{user.roleLabel}</span>
-                    <span className="text-slate-400 group-hover:text-cyan-400 flex items-center gap-1 shrink-0 ml-1 font-bold">
-                      Ingresar <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-                    </span>
-                  </div>
-                </button>
+                <div key={user.id} className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                  <span className="text-cyan-400 font-semibold">{user.username}</span>
+                  <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">{user.roleLabel}</span>
+                </div>
               ))}
+            </div>
+
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+              <span>CONTRASEÑA MOCK:</span>
+              <span className="text-amber-400 font-semibold bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">sinuy123</span>
             </div>
           </div>
 
         </div>
+
 
       </div>
     </div>
