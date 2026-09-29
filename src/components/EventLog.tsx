@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useControl } from '../context/ControlContext';
+import { useAuth } from '../context/AuthContext';
 import { FileText, Search, Trash2, ShieldAlert, CheckCircle, Info, AlertTriangle, Filter } from 'lucide-react';
 import type { LogEntry } from '../types';
 
 
 export const EventLog: React.FC = () => {
   const { logs, clearLogs } = useControl();
+  const { currentUser } = useAuth();
+  const isSupervisor = currentUser?.role === 'supervisor';
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'info' | 'warning' | 'danger' | 'success'>('all');
 
@@ -69,7 +72,9 @@ export const EventLog: React.FC = () => {
         {/* Clear logs button */}
         <button
           onClick={clearLogs}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/30 text-xs font-mono transition-all cursor-pointer self-start sm:self-auto"
+          disabled={isSupervisor}
+          title={isSupervisor ? 'El Rol Supervisor no puede borrar registros' : 'Limpiar historial de logs'}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/30 text-xs font-mono transition-all cursor-pointer self-start sm:self-auto disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Trash2 className="w-3.5 h-3.5" />
           <span>Limpiar Log</span>

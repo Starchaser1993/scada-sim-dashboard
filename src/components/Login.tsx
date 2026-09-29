@@ -133,24 +133,41 @@ export const Login: React.FC = () => {
           </div>
 
           {/* Manual Access Reference Box */}
-          <div className="scada-panel rounded-2xl p-6 border border-slate-800">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="scada-panel rounded-2xl p-6 border border-slate-800 space-y-3">
+            <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-                Credenciales de Acceso (Ingreso Manual)
+                Cuentas Autorizadas y Permisos
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mb-4">
-              Ingrese manualmente cualquiera de las siguientes cuentas autorizadas:
+            <p className="text-xs text-slate-400">
+              Niveles de acceso y permisos configurados por rol:
             </p>
 
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-              {mockUsers.map((user) => (
-                <div key={user.id} className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                  <span className="text-cyan-400 font-semibold">{user.username}</span>
-                  <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">{user.roleLabel}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 gap-2 text-xs font-mono">
+              {mockUsers.map((user) => {
+                let permTag = 'Control Total (Manual, Auto, E-STOP)';
+                let permColor = 'text-purple-300 bg-purple-500/20 border-purple-500/30';
+                if (user.role === 'operador1' || user.role === 'operador2' || user.role === 'operador') {
+                  permTag = 'Control Parcial (Manual, E-STOP - Sin Automático)';
+                  permColor = 'text-cyan-300 bg-cyan-500/20 border-cyan-500/30';
+                } else if (user.role === 'supervisor') {
+                  permTag = 'Solo Lectura (Monitoreo sin control)';
+                  permColor = 'text-amber-300 bg-amber-500/20 border-amber-500/30';
+                }
+
+                return (
+                  <div key={user.id} className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="text-cyan-400 font-semibold">@{user.username}</span>
+                      <span className="text-[10px] text-slate-400 ml-2">({user.name})</span>
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border font-semibold ${permColor}`}>
+                      {permTag}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

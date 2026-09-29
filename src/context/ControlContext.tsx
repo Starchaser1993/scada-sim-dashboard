@@ -169,6 +169,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Actuator Handlers
   const togglePump = () => {
+    if (currentUser?.role === 'supervisor') return;
     if (actuators.mode === 'estop') return;
 
     setActuators((prev) => {
@@ -183,6 +184,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const setPower = (value: number) => {
+    if (currentUser?.role === 'supervisor') return;
     if (actuators.mode === 'estop') return;
     const clamped = Math.max(0, Math.min(100, Math.round(value)));
 
@@ -195,6 +197,14 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const setMode = (mode: OperationMode) => {
+    if (currentUser?.role === 'supervisor') return;
+
+    if (mode === 'auto' && currentUser?.role !== 'admin') {
+      const userStr = currentUser ? currentUser.username : 'Usuario';
+      addLog(`[ACCESO DENEGADO] Usuario ${userStr} intentó activar modo Automático (requiere Administrador)`, 'warning');
+      return;
+    }
+
     if (mode === 'estop') {
       triggerEmergencyStop();
       return;
@@ -209,6 +219,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const triggerEmergencyStop = () => {
+    if (currentUser?.role === 'supervisor') return;
     setActuators({
       pumpOn: false,
       power: 0,
@@ -219,6 +230,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const resetEmergencyStop = () => {
+    if (currentUser?.role === 'supervisor') return;
     setActuators({
       pumpOn: false,
       power: 0,
@@ -229,6 +241,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const clearLogs = () => {
+    if (currentUser?.role === 'supervisor') return;
     setLogs([]);
     addLog('Se limpió el registro de eventos', 'info');
   };
