@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { User } from '../types';
-
+import type { User, ConnectedUser } from '../types';
 
 interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
+  connectedUsers: ConnectedUser[];
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   mockUsers: User[];
@@ -64,6 +64,26 @@ export const MOCK_USERS: (User & { passwordHash: string })[] = [
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'scada_auth_user';
+const SESSIONS_KEY = 'scada_active_sessions_v1';
+
+type SessionsMap = Record<string, ConnectedUser>;
+
+const readActiveSessions = (): SessionsMap => {
+  try {
+    const raw = localStorage.getItem(SESSIONS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeActiveSessions = (map: SessionsMap) => {
+  try {
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(map));
+  } catch (err) {
+    console.error('Error writing active sessions:', err);
+  }
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -75,12 +95,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
+
+  // Keep localStorage sync with currentUser
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
+  }, [currentUser]);
+
+  // Real-time Session Heartbeat & Cross-tab Sync
+  useEffect(() => {
+    const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('scada_presence_channel') : null;
+
+    const refreshSessions = () => {
+      const now = Date.now();
+      const currentMap = readActiveSessions();
+      const updatedMap: SessionsMap = {};
+
+      // Retain unexpired sessions (active within last 8 seconds)
+      Object.values(currentMap).forEach((user) => {
+        if (now - user.lastActive < 8000) {
+          updatedMap[user.username] = user;
+        }
+      });
+
+      // Heartbeat for current user if logged in
+      if (currentUser) {
+        const existing = updatedMap[currentUser.username];
+        updatedMap[currentUser.username] = {
+          ...currentUser,
+          connectedAt: existing ? existing.connectedAt : new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+          lastActive: now,
+        };
+      }
+
+      writeActiveSessions(updatedMap);
+      setConnectedUsers(Object.values(updatedMap));
+    };
+
+    // Initial sync
+    refreshSessions();
+
+    // Heartbeat every 2.5s
+    const heartbeatInterval = setInterval(() => {
+      refreshSessions();
+    }, 2500);
+
+    // Storage event listener (sync across different windows/tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === SESSIONS_KEY) {
+        const currentMap = readActiveSessions();
+        setConnectedUsers(Object.values(currentMap));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    if (channel) {
+      channel.onmessage = () => {
+        const currentMap = readActiveSessions();
+        setConnectedUsers(Object.values(currentMap));
+      };
+    }
+
+    // Cleanup on window unload
+    const handleUnload = () => {
+      if (currentUser) {
+        const currentMap = readActiveSessions();
+        delete currentMap[currentUser.username];
+        writeActiveSessions(currentMap);
+        if (channel) channel.postMessage('USER_DISCONNECTED');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      clearInterval(heartbeatInterval);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('beforeunload', handleUnload);
+      if (channel) channel.close();
+    };
   }, [currentUser]);
 
   const login = async (username: string, password: string) => {
@@ -116,6 +214,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    if (currentUser) {
+      const currentMap = readActiveSessions();
+      delete currentMap[currentUser.username];
+      writeActiveSessions(currentMap);
+    }
     setCurrentUser(null);
   };
 
@@ -126,6 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         currentUser,
         isAuthenticated: !!currentUser,
+        connectedUsers,
         login,
         logout,
         mockUsers: publicMockUsers,

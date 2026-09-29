@@ -9,6 +9,11 @@ export interface User {
   avatarColor: string;
 }
 
+export interface ConnectedUser extends User {
+  connectedAt: string;
+  lastActive: number;
+}
+
 export type OperationMode = 'manual' | 'auto' | 'estop';
 
 export interface ActuatorState {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useControl } from '../context/ControlContext';
+import { ConnectedUsersBadge } from './ConnectedUsersBadge';
 import { LogOut, Activity, Clock, ShieldAlert, Cpu, UserCheck } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -59,28 +60,32 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Center Mode Status Pill */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs">
-          <span className="text-slate-400">MODO ACTUAL:</span>
-          {actuators.mode === 'manual' && (
-            <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">
-              MANUAL
-            </span>
-          )}
-          {actuators.mode === 'auto' && (
-            <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" /> AUTOMÁTICO
-            </span>
-          )}
-          {actuators.mode === 'estop' && (
-            <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold animate-pulse">
-              PARADA EMERGENCIA
-            </span>
-          )}
+        {/* Center Mode Status Pill & Connected Users Counter */}
+        <div className="hidden lg:flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs">
+            <span className="text-slate-400">MODO ACTUAL:</span>
+            {actuators.mode === 'manual' && (
+              <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">
+                MANUAL
+              </span>
+            )}
+            {actuators.mode === 'auto' && (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" /> AUTOMÁTICO
+              </span>
+            )}
+            {actuators.mode === 'estop' && (
+              <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold animate-pulse">
+                PARADA EMERGENCIA
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* User Profile & Logout */}
-        <div className="flex items-center gap-4">
+        {/* User Profile, Connected Users Counter & Logout */}
+        <div className="flex items-center gap-3">
+          <ConnectedUsersBadge />
+
           <div className="flex items-center gap-3 pl-3 border-l border-slate-800">
             <div className={`w-9 h-9 rounded-xl bg-gradient-to-r ${currentUser.avatarColor} p-0.5 shadow-md flex items-center justify-center text-white font-bold font-mono text-sm`}>
               {currentUser.username.substring(0, 2).toUpperCase()}
