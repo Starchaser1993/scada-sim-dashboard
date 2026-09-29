@@ -5,18 +5,28 @@ import type { User } from '../types';
 interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => { success: boolean; error?: string };
+  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   mockUsers: User[];
   loginAsMockUser: (username: string) => { success: boolean; error?: string };
 }
 
-// Predefined mock users as per requirements
-export const MOCK_USERS: (User & { password: string })[] = [
+// SHA-256 hash of the default mock password
+const MOCK_PASSWORD_HASH = '9594509de51c24a5853f4a2e30e64cae0431dad7c92f823bf2582775f8c69afe';
+
+const hashPassword = async (text: string): Promise<string> => {
+  const msgUint8 = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+};
+
+// Predefined mock users with hashed passwords
+export const MOCK_USERS: (User & { passwordHash: string })[] = [
   {
     id: 'usr-1',
     username: 'admin',
-    password: 'sinuy123',
+    passwordHash: MOCK_PASSWORD_HASH,
     name: 'Yunis Ramirez',
     role: 'admin',
     roleLabel: 'Administrador del Sistema',
@@ -25,7 +35,7 @@ export const MOCK_USERS: (User & { password: string })[] = [
   {
     id: 'usr-2',
     username: 'operador1',
-    password: 'sinuy123',
+    passwordHash: MOCK_PASSWORD_HASH,
     name: 'Luis Tapia',
     role: 'operador',
     roleLabel: 'Operador Turno Mañana',
@@ -34,7 +44,7 @@ export const MOCK_USERS: (User & { password: string })[] = [
   {
     id: 'usr-3',
     username: 'operador2',
-    password: 'sinuy123',
+    passwordHash: MOCK_PASSWORD_HASH,
     name: 'Matías Aguilera',
     role: 'operador',
     roleLabel: 'Operador Turno Tarde',
@@ -43,7 +53,7 @@ export const MOCK_USERS: (User & { password: string })[] = [
   {
     id: 'usr-4',
     username: 'supervisor',
-    password: 'sinuy123',
+    passwordHash: MOCK_PASSWORD_HASH,
     name: 'Sebastian Torres',
     role: 'supervisor',
     roleLabel: 'Supervisor de Planta',
@@ -73,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [currentUser]);
 
-  const login = (username: string, password: string) => {
+  const login = async (username: string, password: string) => {
     const userMatch = MOCK_USERS.find(
       (u) => u.username.toLowerCase() === username.trim().toLowerCase()
     );
@@ -82,12 +92,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'Usuario no encontrado.' };
     }
 
-    if (userMatch.password !== password) {
+    const inputHash = await hashPassword(password);
+    if (inputHash !== userMatch.passwordHash) {
       return { success: false, error: 'Contraseña incorrecta.' };
     }
 
-    // Strip password from state
-    const { password: _, ...userWithoutPass } = userMatch;
+    // Strip passwordHash from state
+    const { passwordHash: _, ...userWithoutPass } = userMatch;
     setCurrentUser(userWithoutPass);
     return { success: true };
   };
@@ -99,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!userMatch) {
       return { success: false, error: 'Usuario no encontrado.' };
     }
-    const { password: _, ...userWithoutPass } = userMatch;
+    const { passwordHash: _, ...userWithoutPass } = userMatch;
     setCurrentUser(userWithoutPass);
     return { success: true };
   };
@@ -108,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentUser(null);
   };
 
-  const publicMockUsers = MOCK_USERS.map(({ password: _, ...u }) => u);
+  const publicMockUsers = MOCK_USERS.map(({ passwordHash: _, ...u }) => u);
 
   return (
     <AuthContext.Provider

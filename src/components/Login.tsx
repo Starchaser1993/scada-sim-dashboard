@@ -8,10 +8,10 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const result = login(username, password);
+    const result = await login(username, password);
     if (!result.success) {
       setError(result.error || 'Credenciales no válidas');
     }
