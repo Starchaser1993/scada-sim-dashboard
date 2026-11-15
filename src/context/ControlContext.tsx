@@ -94,7 +94,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
     actuatorsRef.current = actuators;
   }, [actuators]);
 
-  // 3-second interval for automatic sensor variation
+  // 1-second interval for real-time sensor & physics simulation
   useEffect(() => {
     const timer = setInterval(() => {
       setSensors((prev) => {
@@ -105,47 +105,69 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
         let newFlow = prev.flowRate;
 
         if (currentActuators.mode === 'estop') {
-          // Cooling down in E-STOP
-          newTemp = Math.max(22.0, Number((prev.temperature - 1.2).toFixed(1)));
-          newLevel = Number((prev.tankLevel).toFixed(1));
+          // Rapid cooling down in E-STOP
+          const coolDelta = Math.min(2.2, Math.max(0.8, (prev.temperature - 22.0) * 0.08));
+          newTemp = Math.max(22.0, Number((prev.temperature - coolDelta).toFixed(1)));
+
+          // Tank draining 1% per second in E-STOP
+          const outflow = prev.tankLevel > 0 ? 1.0 : 0;
+          newLevel = Math.max(0, Number((prev.tankLevel - outflow).toFixed(1)));
           newFlow = 0;
-          newPressure = Math.max(0, Number((prev.pressure - 0.5).toFixed(1)));
-        } else if (currentActuators.mode === 'auto') {
-          // Automatic mode control logic
-          if (prev.tankLevel < 30 && !currentActuators.pumpOn) {
-            setActuators((a) => ({ ...a, pumpOn: true, power: 75 }));
-            addLog('Modo Automático: Activó bomba por nivel bajo de agua (< 30%)', 'info');
-          } else if (prev.tankLevel > 88 && currentActuators.pumpOn) {
-            setActuators((a) => ({ ...a, pumpOn: false }));
-            addLog('Modo Automático: Apagó bomba por nivel alto de agua (> 88%)', 'info');
+          newPressure = Math.max(0, Number((prev.pressure - 0.2).toFixed(1)));
+        } else {
+          // Automatic mode threshold logic
+          if (currentActuators.mode === 'auto') {
+            if (prev.tankLevel <= 30 && !currentActuators.pumpOn) {
+              setActuators((a) => ({ ...a, pumpOn: true, power: 75 }));
+              addLog('Modo Automático: Activó bomba por nivel bajo de agua (≤ 30%) a 75% de potencia', 'info');
+            } else if (prev.tankLevel >= 88 && currentActuators.pumpOn) {
+              setActuators((a) => ({ ...a, pumpOn: false, power: 0 }));
+              addLog('Modo Automático: Apagó bomba por nivel alto de agua (≥ 88%) para evitar desborde (Potencia 0%)', 'info');
+            }
           }
 
-          // Fluctuating values
-          const tempVariation = (Math.random() * 2 - 0.8) * (currentActuators.pumpOn ? 1.2 : -0.5);
-          newTemp = Math.max(15, Math.min(105, Number((prev.temperature + tempVariation).toFixed(1))));
+          const isPumping = currentActuators.pumpOn;
 
-          const levelDelta = currentActuators.pumpOn
-            ? (currentActuators.power / 100) * 2.5
-            : -1.2;
+          // Tank Level simulation (1-second continuous physics):
+          // - Natural continuous outflow / drainage: 1.0% per second
+          // - Inflow rate: (power / 50) * 1.0% per second (0% at 0%, 0.5% at 25%, 1.0% at 50%, 1.5% at 75%, 2.0% at 100%)
+          // Net change:
+          //   * Pump OFF or 0%: -1.0% / s (drops 1% every 1s)
+          //   * Power 25%: -0.5% / s (drops slowly)
+          //   * Power 50%: 0.0% / s (level is maintained)
+          //   * Power 75%: +0.5% / s (rises slowly)
+          //   * Power 100%: +1.0% / s (rises noticeably faster)
+          const outflow = prev.tankLevel > 0 ? 1.0 : 0;
+          const inflow = isPumping ? (currentActuators.power / 50) * 1.0 : 0;
+          const levelDelta = inflow - outflow;
           newLevel = Math.max(0, Math.min(100, Number((prev.tankLevel + levelDelta).toFixed(1))));
 
-          newFlow = currentActuators.pumpOn ? Number(((currentActuators.power * 0.8) + (Math.random() * 4 - 2)).toFixed(1)) : 0;
-          newPressure = currentActuators.pumpOn ? Number((1.5 + (currentActuators.power / 100) * 3 + (Math.random() * 0.2 - 0.1)).toFixed(1)) : 0.2;
-        } else {
-          // Manual Mode sensor simulation
-          // Temperature depends on pump state & power + noise
-          const heatFactor = currentActuators.pumpOn ? (currentActuators.power / 100) * 2.0 - 0.3 : -1.0;
-          const randomNoise = (Math.random() * 3 - 1.2);
-          newTemp = Math.max(18, Math.min(105, Number((prev.temperature + heatFactor + randomNoise).toFixed(1))));
+          // Thermal simulation based on power and pump status (1s step)
+          const AMBIENT_TEMP = 22.0;
+          const targetTemp = isPumping
+            ? AMBIENT_TEMP + (currentActuators.power / 100) * 68.0
+            : AMBIENT_TEMP;
 
-          // Level variation
-          const levelDelta = currentActuators.pumpOn
-            ? (currentActuators.power / 100) * 1.8
-            : -0.8;
-          newLevel = Math.max(0, Math.min(100, Number((prev.tankLevel + levelDelta).toFixed(1))));
+          const diff = targetTemp - prev.temperature;
+          let tempDelta = 0;
+          if (diff < 0) {
+            // Rapid cooling when reducing power/speed or stopping pump
+            const coolRate = Math.min(2.0, Math.max(0.7, Math.abs(diff) * 0.07));
+            tempDelta = -coolRate + (Math.random() * 0.14 - 0.07);
+          } else {
+            // Progressive heating up
+            const heatRate = Math.min(1.2, Math.max(0.25, diff * 0.035));
+            tempDelta = heatRate + (Math.random() * 0.14 - 0.07);
+          }
+          newTemp = Math.max(18.0, Math.min(105.0, Number((prev.temperature + tempDelta).toFixed(1))));
 
-          newFlow = currentActuators.pumpOn ? Number(((currentActuators.power * 0.75) + (Math.random() * 3 - 1.5)).toFixed(1)) : 0;
-          newPressure = currentActuators.pumpOn ? Number((1.2 + (currentActuators.power / 100) * 2.8).toFixed(1)) : 0.1;
+          // Flow and Pressure
+          newFlow = isPumping
+            ? Number(((currentActuators.power * 0.75) + (Math.random() * 1.0 - 0.5)).toFixed(1))
+            : 0;
+          newPressure = isPumping
+            ? Number((1.2 + (currentActuators.power / 100) * 2.8 + (Math.random() * 0.04 - 0.02)).toFixed(1))
+            : Math.max(0.1, Number((prev.pressure - 0.2).toFixed(1)));
         }
 
         // Temperature Alert (> 80°C)
@@ -162,7 +184,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
           isHighTempAlert: isHighTemp,
         };
       });
-    }, 3000);
+    }, 1000);
 
     return () => clearInterval(timer);
   }, [addLog]);
@@ -170,7 +192,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Actuator Handlers
   const togglePump = () => {
     if (currentUser?.role === 'supervisor') return;
-    if (actuators.mode === 'estop') return;
+    if (actuators.mode === 'estop' || actuators.mode === 'auto') return;
 
     setActuators((prev) => {
       const nextState = !prev.pumpOn;
@@ -179,19 +201,51 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
         `Usuario ${userStr} ${nextState ? 'ACTIVÓ' : 'APAGÓ'} la bomba principal`,
         nextState ? 'success' : 'warning'
       );
-      return { ...prev, pumpOn: nextState };
+      if (!nextState) {
+        // Immediate cooling drop when pump is turned off
+        setSensors((s) => {
+          const newTemp = Math.max(22.0, Number((s.temperature - 2.0).toFixed(1)));
+          return {
+            ...s,
+            temperature: newTemp,
+            isHighTempAlert: newTemp > 80.0,
+          };
+        });
+        return { ...prev, pumpOn: false, power: 0 };
+      } else {
+        const restoredPower = prev.power > 0 ? prev.power : 65;
+        return { ...prev, pumpOn: true, power: restoredPower };
+      }
     });
   };
 
   const setPower = (value: number) => {
     if (currentUser?.role === 'supervisor') return;
-    if (actuators.mode === 'estop') return;
+    if (actuators.mode === 'estop' || actuators.mode === 'auto') return;
     const clamped = Math.max(0, Math.min(100, Math.round(value)));
 
     setActuators((prev) => {
       if (prev.power === clamped) return prev;
+      const oldPower = prev.power;
       const userStr = currentUser ? currentUser.username : 'Usuario';
       addLog(`Usuario ${userStr} cambió la potencia/velocidad a ${clamped}%`, 'info');
+
+      // Immediate visual cooling feedback when power is lowered
+      if (clamped < oldPower) {
+        const powerDrop = oldPower - clamped;
+        const immediateDrop = Number(((powerDrop / 100) * 3.0).toFixed(1));
+        if (immediateDrop > 0) {
+          setSensors((s) => {
+            const newTemp = Math.max(22.0, Number((s.temperature - immediateDrop).toFixed(1)));
+            return {
+              ...s,
+              temperature: newTemp,
+              isHighTempAlert: newTemp > 80.0,
+            };
+          });
+        }
+      }
+
       return { ...prev, power: clamped };
     });
   };
@@ -199,22 +253,31 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setMode = (mode: OperationMode) => {
     if (currentUser?.role === 'supervisor') return;
 
-    if (mode === 'auto' && currentUser?.role !== 'admin') {
-      const userStr = currentUser ? currentUser.username : 'Usuario';
-      addLog(`[ACCESO DENEGADO] Usuario ${userStr} intentó activar modo Automático (requiere Administrador)`, 'warning');
-      return;
-    }
-
     if (mode === 'estop') {
       triggerEmergencyStop();
       return;
     }
 
+    if (mode === 'auto') {
+      const userStr = currentUser ? currentUser.username : 'Usuario';
+      const shouldPump = sensors.tankLevel < 88;
+      addLog(
+        `Usuario ${userStr} activó el Modo Automático. PLC tomó control autónomo (${shouldPump ? 'Bomba activada al 75% hasta alcanzar 88%' : 'Nivel ≥ 88%, bomba en espera de drenaje hasta 30%'})`,
+        'info'
+      );
+      setActuators((prev) => ({
+        ...prev,
+        mode: 'auto',
+        pumpOn: shouldPump,
+        power: shouldPump ? 75 : 0,
+      }));
+      return;
+    }
+
     setActuators((prev) => {
       const userStr = currentUser ? currentUser.username : 'Usuario';
-      const modeNames = { manual: 'Manual', auto: 'Automático', estop: 'Parada de Emergencia' };
-      addLog(`Usuario ${userStr} cambió el modo de operación a ${modeNames[mode]}`, 'info');
-      return { ...prev, mode };
+      addLog(`Usuario ${userStr} cambió el modo de operación a Manual (Control de actuadores desbloqueado)`, 'info');
+      return { ...prev, mode: 'manual' };
     });
   };
 
@@ -227,6 +290,15 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
     const userStr = currentUser ? currentUser.username : 'Usuario';
     addLog(`¡PARADA DE EMERGENCIA! Usuario ${userStr} activó la Parada de Emergencia (E-STOP)`, 'danger');
+    // Immediate emergency cooling response
+    setSensors((s) => {
+      const newTemp = Math.max(22.0, Number((s.temperature - 3.5).toFixed(1)));
+      return {
+        ...s,
+        temperature: newTemp,
+        isHighTempAlert: newTemp > 80.0,
+      };
+    });
   };
 
   const resetEmergencyStop = () => {

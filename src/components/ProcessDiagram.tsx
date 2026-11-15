@@ -84,7 +84,7 @@ export const ProcessDiagram: React.FC = () => {
               isPumpActive ? 'text-emerald-400 animate-spin-slow' : 'text-rose-500'
             }`} />
             <span className="text-[9px] font-mono font-bold mt-1 text-slate-300">
-              {actuators.power}% RPM
+              {isPumpActive ? actuators.power : 0}% RPM
             </span>
           </div>
           <span className="text-[11px] font-mono text-slate-400">Bomba Hydro-A</span>

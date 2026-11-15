@@ -20,7 +20,7 @@ export const Sensors: React.FC = () => {
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
               Monitoreo de Sensores
             </h2>
-            <p className="text-xs text-slate-400 font-mono">Telemetría en tiempo real (Intervalo 3.0s)</p>
+            <p className="text-xs text-slate-400 font-mono">Telemetría en tiempo real (Intervalo 1.0s)</p>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useControl } from '../context/ControlContext';
 import { useAuth } from '../context/AuthContext';
-import { Power, Gauge, ShieldAlert, Sliders, Cpu, AlertTriangle, RotateCcw, Lock, Eye } from 'lucide-react';
+import { Power, Gauge, ShieldAlert, Sliders, Cpu, AlertTriangle, RotateCcw, Eye } from 'lucide-react';
 
 
 export const Actuators: React.FC = () => {
@@ -9,7 +9,7 @@ export const Actuators: React.FC = () => {
   const { currentUser } = useAuth();
 
   const isEstop = actuators.mode === 'estop';
-  const isAdmin = currentUser?.role === 'admin';
+  const isAuto = actuators.mode === 'auto';
   const isSupervisor = currentUser?.role === 'supervisor';
 
   return (
@@ -63,19 +63,15 @@ export const Actuators: React.FC = () => {
           <button
             type="button"
             onClick={() => setMode('auto')}
-            disabled={isEstop || isSupervisor || !isAdmin}
-            title={!isAdmin ? 'Modo Automático exclusivo para Administrador' : ''}
-            className={`py-2.5 px-3 rounded-lg font-mono text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            disabled={isEstop || isSupervisor}
+            className={`py-2.5 px-3 rounded-lg font-mono text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               actuators.mode === 'auto'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 border border-emerald-400/30'
-                : !isAdmin
-                ? 'text-slate-600 bg-slate-900/50 border border-slate-800/80 cursor-not-allowed opacity-60'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed'
             }`}
           >
-            {!isAdmin ? <Lock className="w-3.5 h-3.5 text-amber-400" /> : <Gauge className="w-3.5 h-3.5" />}
+            <Gauge className="w-3.5 h-3.5" />
             <span>Automático</span>
-            {!isAdmin && <span className="text-[9px] text-amber-400/90 font-mono">(Admin)</span>}
           </button>
 
           <button
@@ -92,6 +88,30 @@ export const Actuators: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Automatic Mode Status Banner */}
+      {isAuto && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-mono space-y-2 shadow-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-emerald-400 text-sm">
+              <Gauge className="w-4 h-4 shrink-0 animate-spin-slow" />
+              CONTROL AUTÓNOMO ACTIVO (PLC)
+            </div>
+            <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-300 border border-emerald-500/30 font-bold">
+              LAZO CERRADO
+            </span>
+          </div>
+          <p className="text-slate-300">
+            El sistema regula automáticamente el nivel del tanque: enciende la bomba al 75% si el nivel cae a ≤ 30% y la apaga al alcanzar ≥ 88%.
+          </p>
+          <div className="text-[11px] text-emerald-400/90 font-mono flex items-center gap-1.5 pt-1">
+            <span>Estado actual del PLC:</span>
+            <span className="font-bold underline">
+              {actuators.pumpOn ? 'Bomba ENCENDIDA (75% llenando a +0.5%/s)' : 'Bomba APAGADA (esperando vaciado hasta ≤ 30%)'}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Emergency Stop Warning Banner if active */}
       {isEstop && (
@@ -146,15 +166,15 @@ export const Actuators: React.FC = () => {
           <button
             type="button"
             onClick={togglePump}
-            disabled={isEstop || isSupervisor}
+            disabled={isEstop || isSupervisor || isAuto}
             className={`px-5 py-2.5 rounded-xl font-mono text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               actuators.pumpOn
                 ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30'
                 : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30'
-            } disabled:opacity-30 disabled:cursor-not-allowed`}
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
           >
             <Power className="w-4 h-4" />
-            {actuators.pumpOn ? 'APAGAR BOMBA' : 'ENCENDER BOMBA'}
+            {isAuto ? 'REGULADO POR AUTO' : actuators.pumpOn ? 'APAGAR BOMBA' : 'ENCENDER BOMBA'}
           </button>
         </div>
       </div>
@@ -190,7 +210,7 @@ export const Actuators: React.FC = () => {
             max="100"
             value={actuators.power}
             onChange={(e) => setPower(Number(e.target.value))}
-            disabled={isEstop || !actuators.pumpOn || isSupervisor}
+            disabled={isEstop || !actuators.pumpOn || isSupervisor || isAuto}
             className="w-full accent-cyan-400 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed h-2 rounded-lg bg-slate-950"
           />
           <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
@@ -210,7 +230,7 @@ export const Actuators: React.FC = () => {
               key={val}
               type="button"
               onClick={() => setPower(val)}
-              disabled={isEstop || !actuators.pumpOn || isSupervisor}
+              disabled={isEstop || !actuators.pumpOn || isSupervisor || isAuto}
               className={`flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 transition-all cursor-pointer disabled:opacity-30 ${
                 actuators.power === val ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 font-bold' : ''
               }`}

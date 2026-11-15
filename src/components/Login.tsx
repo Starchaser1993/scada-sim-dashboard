@@ -60,7 +60,7 @@ export const Login: React.FC = () => {
             </div>
             <div className="flex items-center justify-between">
               <span>FRECUENCIA SENSORES:</span>
-              <span className="text-slate-300">3.0 SEGUNDOS</span>
+              <span className="text-slate-300">1.0 SEGUNDO</span>
             </div>
           </div>
         </div>
@@ -149,7 +149,7 @@ export const Login: React.FC = () => {
                 let permTag = 'Control Total (Manual, Auto, E-STOP)';
                 let permColor = 'text-purple-300 bg-purple-500/20 border-purple-500/30';
                 if (user.role === 'operador1' || user.role === 'operador2' || user.role === 'operador') {
-                  permTag = 'Control Parcial (Manual, E-STOP - Sin Automático)';
+                  permTag = 'Control Operativo (Manual, Auto, E-STOP)';
                   permColor = 'text-cyan-300 bg-cyan-500/20 border-cyan-500/30';
                 } else if (user.role === 'supervisor') {
                   permTag = 'Solo Lectura (Monitoreo sin control)';
