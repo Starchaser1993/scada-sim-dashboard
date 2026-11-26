@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe de Ingeniería de Detalle - SCADA Sim Dashboard</title>
+<style>
+  @page {
+    size: letter;
+    margin: 20mm 15mm 20mm 15mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background-color: #ffffff;
+    line-height: 1.6;
+    font-size: 10.5pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Portada */
+  .cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+    padding: 40px 20px 20px 20px;
+    box-sizing: border-box;
+    border-left: 8px solid #0284c7;
+  }
+
+  .cover-header {
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 20px;
+  }
+
+  .cover-header h3 {
+    margin: 0;
+    font-size: 13pt;
+    text-transform: uppercase;
+    color: #0f172a;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+
+  .cover-header p {
+    margin: 4px 0 0 0;
+    font-size: 10pt;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .cover-body {
+    margin: auto 0;
+  }
+
+  .badge-topic {
+    display: inline-block;
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+  }
+
+  .cover-title {
+    font-size: 26pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin: 0 0 16px 0;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .cover-meta {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  .meta-item strong {
+    display: block;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 3px;
+  }
+
+  .meta-item span {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  /* Estilos generales */
+  h1 {
+    color: #0f172a;
+    font-size: 18pt;
+    font-weight: 800;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 6px;
+    margin-top: 35px;
+    margin-bottom: 15px;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    color: #0369a1;
+    font-size: 13.5pt;
+    font-weight: 700;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    color: #334155;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 0 0 12px 0;
+    text-align: justify;
+  }
+
+  ul, ol {
+    margin: 0 0 14px 0;
+    padding-left: 24px;
+  }
+
+  li {
+    margin-bottom: 5px;
+  }
+
+  /* Tablas */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+
+  th, td {
+    padding: 9px 12px;
+    text-align: left;
+    border: 1px solid #cbd5e1;
+  }
+
+  th {
+    background-color: #0f172a;
+    color: #ffffff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 8pt;
+    letter-spacing: 0.5px;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+
+  /* Cajas de alerta y notas */
+  .callout {
+    border-left: 4px solid #0284c7;
+    background-color: #f0f9ff;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  .callout-warning {
+    border-left-color: #e11d48;
+    background-color: #fff1f2;
+    color: #9f1239;
+  }
+
+  .callout-success {
+    border-left-color: #059669;
+    background-color: #ecfdf5;
+    color: #065f46;
+  }
+
+  .callout strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10pt;
+  }
+
+  /* Bloques de código / diagramas */
+  pre {
+    background-color: #0f172a;
+    color: #f8fafc;
+    padding: 14px;
+    border-radius: 6px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8pt;
+    line-height: 1.45;
+    overflow-x: auto;
+    margin: 14px 0;
+    page-break-inside: avoid;
+  }
+
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 9pt;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  .footer-note {
+    font-size: 8pt;
+    color: #94a3b8;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+  <div class="cover-header">
+    <h3>Universidad Técnica Federico Santa María</h3>
+    <p>Sede Viña del Mar &bull; Departamento de Electrotecnia e Informática (ELINF)</p>
+    <p>Asignatura: Instrumentación y Automatización (PIECII-2026)</p>
+  </div>
+
+  <div class="cover-body">
+    <div class="badge-topic">Proyecto de Automatización &bull; Pauta Oficial (Pág. 14)</div>
+    <h1 class="cover-title">INFORME DE INGENIERÍA DE DETALLE Y PUESTA EN MARCHA</h1>
+    <p class="cover-subtitle">Simulador Web SCADA/HMI para Monitoreo de Lazo Hidráulico-Térmico con Control Autónomo (PLC), Gestión de Actuadores y Autenticación Criptográfica Multiusuario (RBAC)</p>
+  </div>
+
+  <div class="cover-meta">
+    <div class="meta-item">
+      <strong>Asignatura</strong>
+      <span>Instrumentación y Automatización</span>
+    </div>
+    <div class="meta-item">
+      <strong>Profesor de Cátedra</strong>
+      <span>Michael Silva M.</span>
+    </div>
+    <div class="meta-item">
+      <strong>Entregable</strong>
+      <span>Informe Técnico Final (35% Calificación)</span>
+    </div>
+    <div class="meta-item">
+      <strong>Fecha Oficial de Entrega</strong>
+      <span>Jueves 03 de Diciembre de 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- CAPÍTULO 1 -->
+<h1>1. Identificación del Proyecto y Alineación con la Rúbrica</h1>
+
+<h2>1.1. Contexto de la Asignatura y Tema Asignado</h2>
+<p>
+El presente informe de ingeniería de detalle documenta el diseño, la formulación matemática, la arquitectura de control y la implementación funcional de la plataforma <strong>SCADA Sim Dashboard</strong>. Este desarrollo responde con exactitud al tema de proyecto oficial estipulado en la <strong>página 14</strong> de las <em>Normativas de la Asignatura (Capítulo 0)</em> dictadas por el profesor <strong>Michael Silva M.</strong>:
+</p>
+
+<div class="callout callout-success">
+  <strong>Definición del Tema Seleccionado (Pauta Oficial Pág. 14):</strong>
+  <em>"Programación y creación de una página web https con extensión *.org que simule una plataforma básica de control para 4 usuarios, cada uno con su propia clave."</em>
+</div>
+
+<h2>1.2. Matriz de Cumplimiento de Criterios de Evaluación</h2>
+<p>
+Conforme a las exigencias establecidas en las páginas 18, 19, 23 y 25 del documento normativo, el proyecto cumple estrictamente con los siguientes estándares de la carrera de Ingeniería en Control e Instrumentación Industrial:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Criterio Evaluado</th>
+      <th>Requisito Normativo de la Cátedra</th>
+      <th>Evidencia Técnica en el Proyecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Autenticación y Multiusuario</strong></td>
+      <td>Plataforma para 4 usuarios, cada uno con clave propia.</td>
+      <td>Implementación de 4 cuentas independientes (<code>admin</code>, <code>operador1</code>, <code>operador2</code>, <code>supervisor</code>) con hashing criptográfico <strong>SHA-256</strong> mediante Web Crypto API nativa.</td>
+    </tr>
+    <tr>
+      <td><strong>Cuantificación de Resultados</strong></td>
+      <td>Resultados dinámicos claramente cuantificables y medibles (Pág. 18).</td>
+      <td>Modelo físico con balance de masa continuo (llenado proporcional a potencia de bomba vs drenaje de 1%/s) y balance térmico con enfriamiento natural hacia 22°C ambiental. Muestreo cíclico de 1,0 s.</td>
+    </tr>
+    <tr>
+      <td><strong>Lazo de Control</strong></td>
+      <td>Lógica de automatización industrial funcional (Pág. 19 y 25).</td>
+      <td>Controlador autónomo por histéresis tipo PLC: arranque automático en nivel bajo (&le; 30%) a 75% de potencia y corte por nivel alto (&ge; 88%) para prevención de desbordes.</td>
+    </tr>
+    <tr>
+      <td><strong>Seguridad Operacional</strong></td>
+      <td>Enfoque en seguridad y estabilidad de la solución (Pág. 19 y 26).</td>
+      <td>Incorporación de parada de emergencia instantánea (<strong>E-STOP</strong>) con enclavamiento, alerta crítica por sobrecalentamiento (&gt; 80°C) y rol <em>Supervisor</em> en modo solo lectura.</td>
+    </tr>
+    <tr>
+      <td><strong>Trazabilidad y Auditoría</strong></td>
+      <td>Respaldo integral del proceso de operación.</td>
+      <td>Módulo de bitácora (Audit Log) con marca de tiempo, usuario autenticado, rol, descripción unívoca del evento y nivel de severidad.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 2 -->
+<h1>2. Ingeniería de Detalle y Diagrama P&ID (Norma ANSI/ISA-5.1)</h1>
+
+<h2>2.1. Descripción Unívoca del Proceso Industrial</h2>
+<p>
+La planta simulada consiste en un <strong>lazo de recirculación y acondicionamiento hidráulico-térmico</strong> integrado por tres componentes primarios:
+</p>
+<ol>
+  <li><strong>Depósito de Almacenamiento Principal (Tanque T-101):</strong> Estanque vertical de 2.500 litros de capacidad nominal dotado de transmisor de nivel continuo (LT-101), sujeto a un consumo de salida continuo de proceso.</li>
+  <li><strong>Unidad de Bombeo Centrífugo (Bomba Hydro-A):</strong> Actuador motriz impulsado mediante un variador de frecuencia (VFD-01) que modula el caudal volumétrico recirculado (0 a 75 L/min) en función de la consigna de potencia (0 a 100%).</li>
+  <li><strong>Reactor Térmico de Mezcla (Reactor R-20):</strong> Recipiente de intercambio donde el fluido recibe energía mecánica y térmica, monitorizado en tiempo real por un transmisor de temperatura (TT-101) con enclavamiento por alarma de alta temperatura (TAH-101 a 80°C).</li>
+</ol>
+
+<h2>2.2. Diagrama de Tuberías e Instrumentación (P&ID)</h2>
+<pre>
+                      ==============================================
+                      DIAGRAMA DE TUBERÍAS E INSTRUMENTACIÓN (P&ID)
+                      NORMA ANSI / ISA-5.1 - PROCESO LAZO CERRADO
+                      ==============================================
+
+                          +--------------------------+
+                          |       TANQUE T-101       |
+                          |   Capacidad: 2500 Litros |
+                          |                          |
+                          |       +----------+       |
+                          |       |  LT-101  |       |
+                          +-------+----+-----+-------+
+                                       |
+                           Línea 01    |  Fluido (Succión)
+                          [DN50 PVC]   v
+                          +------------+-------------+
+                          |                          |
+                          v                          |
+                   +--------------+                  |
+                   | BOMBA HYD-A  |                  | Línea 03
+                   |   [VFD-01]   |                  | Retorno / Bypass
+                   +-------+------+                  | [DN50 Acero Inox]
+                           |                         |
+               Línea 02    |  Impulsión Forzada      |
+              [DN50 Inox]  v                         |
+                   +-------+------+                  |
+                   |   FT-101     | (Transmisor      |
+                   |   PT-101     |  Caudal/Presión) |
+                   +-------+------+                  |
+                           |                         |
+                           v                         |
+                  +------------------+               |
+                  |   REACTOR R-20   |               |
+                  |  [TT-101 / TEMP] |---------------+
+                  |  [TAH-101 > 80C] |
+                  +------------------+
+</pre>
+
+<h2>2.3. Tabla Maestra de Instrumentación y Actuadores</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Tag ISA-5.1</th>
+      <th>Descripción del Equipo</th>
+      <th>Variable de Medida</th>
+      <th>Rango Físico</th>
+      <th>Rango Eléctrico / Consigna</th>
+      <th>Punto de Ajuste (Set Point)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>LT-101</strong></td>
+      <td>Transmisor de Nivel (LEV-02)</td>
+      <td>Nivel hidrostático en T-101</td>
+      <td>0 a 100 % (0 a 2.500 L)</td>
+      <td>4 a 20 mA (Modbus TCP)</td>
+      <td>LAL: 30% / LAH: 88%</td>
+    </tr>
+    <tr>
+      <td><strong>TT-101</strong></td>
+      <td>Transmisor de Temperatura</td>
+      <td>Temperatura de fluido en R-20</td>
+      <td>18,0 a 105,0 °C</td>
+      <td>RTD PT100 / 4 a 20 mA</td>
+      <td>TAH: 80,0 °C (Alarma Crítica)</td>
+    </tr>
+    <tr>
+      <td><strong>PT-101</strong></td>
+      <td>Transmisor de Presión</td>
+      <td>Presión en cabezal de impulsión</td>
+      <td>0,0 a 4,5 PSI (0 a 0,31 bar)</td>
+      <td>Piezoeléctrico 0 a 10 Vcc</td>
+      <td>Máx. nominal: 4,0 PSI</td>
+    </tr>
+    <tr>
+      <td><strong>FT-101</strong></td>
+      <td>Transmisor de Caudal</td>
+      <td>Caudal volumétrico circulante</td>
+      <td>0,0 a 75,0 L/min</td>
+      <td>Turbina electromagnética</td>
+      <td>Caudal nominal: 56 L/min (75%)</td>
+    </tr>
+    <tr>
+      <td><strong>VFD-01</strong></td>
+      <td>Variador de Frecuencia</td>
+      <td>Velocidad y potencia del motor</td>
+      <td>0 a 100 % (0 a 50 Hz / RPM)</td>
+      <td>Salida PWM trifásica</td>
+      <td>Auto: 75% / Manual: 0 a 100%</td>
+    </tr>
+    <tr>
+      <td><strong>ES-101</strong></td>
+      <td>Parada de Emergencia</td>
+      <td>Enclavamiento de seguridad</td>
+      <td>Estado Binario (Activo / Reset)</td>
+      <td>Contacto NC de seguridad</td>
+      <td>Corte inmediato de potencia</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 3 -->
+<h1>3. Memorias de Cálculo y Modelo Matemático Dinámico</h1>
+
+<h2>3.1. Dinámica Hidráulica y Balance de Masa (Tanque T-101)</h2>
+<p>
+El balance de materia no estacionario para el volumen de líquido contenido en el estanque se formula de acuerdo a la ecuación de continuidad:
+</p>
+<pre>
+   dV(t) / dt = Q_in(t) - Q_out(t)
+</pre>
+<p>
+Expresando el volumen en términos de porcentaje de nivel relativo $L(t) \in [0, 100]\%$, el modelo discretizado por diferencias finitas con paso temporal $\Delta t = 1,0 	ext{ s}$ se define como:
+</p>
+<pre>
+   L(t + Delta_t) = L(t) + [ Q_in(t) - Q_out(t) ] * Delta_t
+</pre>
+<p>Donde los flujos normalizados son calculados de la siguiente forma:</p>
+<ul>
+  <li><strong>Caudal de salida continuo ($Q_{out}$):</strong> Modela la fuga / demanda constante de proceso:
+    <br><code>Q_out = 1,0 %/s &nbsp;(si L(t) > 0; de lo contrario 0)</code>
+  </li>
+  <li><strong>Caudal de entrada impulsado ($Q_{in}$):</strong> Depende directamente del estado y potencia del variador de frecuencia ($P(t) \in [0, 100]\%$):
+    <br><code>Q_in(t) = (P(t) / 50,0) * 1,0 %/s &nbsp;(si Bomba = ON; de lo contrario 0)</code>
+  </li>
+</ul>
+
+<h3>Comportamiento Cuantificable y Puntos Notables:</h3>
+<ol>
+  <li><strong>$P(t) = 0\%$ (o Bomba Desconectada):</strong> $Q_{in} = 0,0\%/	ext{s} \implies \Delta L = -1,0\%/	ext{s}$. El estanque experimenta una pendiente de vaciado constante de 1% por segundo.</li>
+  <li><strong>$P(t) = 25\%$:</strong> $Q_{in} = 0,5\%/	ext{s} \implies \Delta L = -0,5\%/	ext{s}$ (vaciado amortiguado).</li>
+  <li><strong>$P(t) = 50\%$ (Punto de Equilibrio Hidrostático en Régimen Permanente):</strong>
+    <br><code>Q_in = (50 / 50) * 1,0 = 1,0 %/s ===> Delta L = 1,0 - 1,0 = 0,0 %/s</code>
+    <br>En esta condición, el nivel se mantiene estrictamente invariante en el tiempo ($dL/dt = 0$).
+  </li>
+  <li><strong>$P(t) = 75\%$ (Consigna del Lazo Autónomo PLC):</strong> $Q_{in} = 1,5\%/	ext{s} \implies \Delta L = +0,5\%/	ext{s}$. Llenado sostenido hacia la cota máxima permitida.</li>
+  <li><strong>$P(t) = 100\%$:</strong> $Q_{in} = 2,0\%/	ext{s} \implies \Delta L = +1,0\%/	ext{s}$. Tasa máxima admisible de carga.</li>
+</ol>
+
+<h2>3.2. Dinámica Térmica y Disipación Energética (Reactor R-20)</h2>
+<p>
+La temperatura del fluido en el reactor evoluciona de acuerdo a la Ley de Enfriamiento de Newton acoplada a la generación de calor por fricción hidrodinámica del impulsor:
+</p>
+<pre>
+   dT(t) / dt = k * [ T_target(P) - T(t) ]
+</pre>
+<p>
+Donde la temperatura asintótica de equilibrio $T_{target}$ se calcula a partir de la temperatura ambiente base ($T_{amb} = 22,0^\circ	ext{C}$) y la potencia inyectada:
+</p>
+<pre>
+   T_target = T_amb + (P(t) / 100,0) * 68,0 °C &nbsp;[Rango asintótico: 22°C a 90°C]
+</pre>
+
+<p>La tasa de variación instantánea $\Delta T$ en cada ciclo de 1 segundo se calcula según el gradiente térmico:</p>
+<ul>
+  <li><strong>Régimen de Calentamiento ($T(t) < T_{target}$):</strong>
+    <br><code>Delta_T_heat = min(1.2, max(0.25, (T_target - T) * 0.035)) + Ruido(±0.07°C)</code>
+  </li>
+  <li><strong>Régimen de Enfriamiento Rápido ($T(t) > T_{target}$ o Bomba OFF):</strong>
+    <br><code>Delta_T_cool = -min(2.0, max(0.7, |T_target - T| * 0.07)) + Ruido(±0.07°C)</code>
+  </li>
+</ul>
+
+<div class="callout callout-warning">
+  <strong>Criterio de Seguridad Térmica (Alarma Crítica TAH-101):</strong>
+  Si la temperatura de proceso supera los <strong>80,0 °C</strong>, el sistema activa automáticamente un indicador estroboscópico de alerta, emite una entrada prioritaria en el registro de auditoría (tipo <code>DANGER</code>) y solicita la intervención inmediata del operador o la activación del E-STOP.
+</div>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 4 -->
+<h1>4. Lógica de Automatización, PLC y Modos de Operación</h1>
+
+<h2>4.1. Máquina de Estados Finitos (FSM) de Control</h2>
+<p>
+El núcleo de control opera bajo una arquitectura de estados finitos mutuamente excluyentes:
+</p>
+
+<pre>
+                          +------------------------+
+                          |   ESTADO: MODO MANUAL  |
+                          | (Control libre de VFD) |
+                          +-----------+------------+
+                                      |
+                      Selección AUTO  |  Selección MANUAL
+                                      v
+                          +-----------+------------+
+                          | ESTADO: MODO AUTO (PLC)|
+                          | (Lazo Cerrado Hister.) |
+                          +-----------+------------+
+                                      |
+                           Pulsador   |   Pulsador
+                            E-STOP    |    E-STOP
+                                      v
+                          +-----------+------------+
+                          |  ESTADO: MODO E-STOP   |
+                          | (Corte de Fuerza 0 kW) |
+                          +-----------+------------+
+                                      |
+                                      | Acción "Rearmar Sistema" (Reset)
+                                      v
+                          +-----------+------------+
+                          |   ESTADO: MODO MANUAL  |
+                          |  (Bomba en reposo 0%)  |
+                          +------------------------+
+</pre>
+
+<h2>4.2. Algoritmo de Control en Lazo Cerrado por Histéresis (PLC Autónomo)</h2>
+<p>
+Cuando el sistema se conmuta a <strong>Modo Automático</strong>, el PLC asume el gobierno autónomo de la bomba para mantener el nivel del tanque dentro de una banda de tolerancia óptima, evitando ciclamientos excesivos del motor:
+</p>
+<pre>
+   SI Modo == "AUTO":
+       SI Nivel_Tanque &lt;= 30.0% Y Bomba == OFF:
+           Bomba = ON
+           Potencia_VFD = 75%
+           Registrar_Log("PLC Modo Auto: Encendido por nivel bajo <= 30% a 75% potencia")
+       
+       SINO SI Nivel_Tanque &gt;= 88.0% Y Bomba == ON:
+           Bomba = OFF
+           Potencia_VFD = 0%
+           Registrar_Log("PLC Modo Auto: Apagado de seguridad por nivel alto >= 88%")
+</pre>
+
+<h2>4.3. Protocolo de Parada de Emergencia (E-STOP según IEC 60204-1)</h2>
+<p>
+En cumplimiento con el estándar internacional de seguridad en maquinaria <strong>IEC 60204-1 (Categoría de Parada 0/1)</strong>:
+</p>
+<ul>
+  <li><strong>Corte Inmediato:</strong> Desconexión instantánea de la bomba y reducción de la potencia del VFD a 0%.</li>
+  <li><strong>Despresurización:</strong> Caída progresiva de presión en la línea de descarga hasta 0 PSI.</li>
+  <li><strong>Enfriamiento Forzado:</strong> Reducción inmediata de la temperatura del reactor hacia el estado pasivo.</li>
+  <li><strong>Enclavamiento de Seguridad:</strong> Todos los controles manuales de velocidad y encendido se inhabilitan en la interfaz hasta que un operador calificado ejecute el procedimiento formal de <em>Rearme del Sistema</em>.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 5 -->
+<h1>5. Ciberseguridad Industrial y Gestión de Accesos (IEC 62443)</h1>
+
+<h2>5.1. Segregación de Funciones por Roles (RBAC)</h2>
+<p>
+En cumplimiento de la norma <strong>IEC 62443 (Seguridad para Sistemas de Control y Automatización Industrial - IACS)</strong>, se implementó un esquema de permisos estrictamente jerárquico para los 4 usuarios del sistema:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Nombre de Usuario</th>
+      <th>Nombre del Operador</th>
+      <th>Rol Industrial</th>
+      <th>Privilegios de Control</th>
+      <th>Privilegios de Auditoría</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>admin</code></td>
+      <td>Yunis Ramirez</td>
+      <td>Administrador del Sistema</td>
+      <td>Control Total (Manual, Auto, E-STOP, Reset)</td>
+      <td>Visualizar y Borrar Bitácora de Eventos</td>
+    </tr>
+    <tr>
+      <td><code>operador1</code></td>
+      <td>Luis Tapia</td>
+      <td>Operador Turno Mañana</td>
+      <td>Control Operativo (Bomba, VFD, Modos)</td>
+      <td>Visualizar Bitácora (Sin permiso de borrado)</td>
+    </tr>
+    <tr>
+      <td><code>operador2</code></td>
+      <td>Matías Aguilera</td>
+      <td>Operador Turno Tarde</td>
+      <td>Control Operativo (Bomba, VFD, Modos)</td>
+      <td>Visualizar Bitácora (Sin permiso de borrado)</td>
+    </tr>
+    <tr>
+      <td><code>supervisor</code></td>
+      <td>Sebastian Torres</td>
+      <td>Supervisor de Planta</td>
+      <td><strong>Solo Lectura (Read-Only)</strong>: Todos los actuadores deshabilitados</td>
+      <td>Visualización y Auditoría Permanente</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>5.2. Almacenamiento Criptográfico Seguro de Credenciales</h2>
+<p>
+Para impedir la exposición de credenciales en texto claro dentro del código fuente o la memoria del navegador, se integró el motor criptográfico nativo del estándar W3C <code>window.crypto.subtle</code> con algoritmo <strong>SHA-256</strong>:
+</p>
+<pre>
+   const hashPassword = async (text: string): Promise&lt;string&gt; => {
+     const msgUint8 = new TextEncoder().encode(text);
+     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+     return Array.from(new Uint8Array(hashBuffer))
+       .map((b) => b.toString(16).padStart(2, '0'))
+       .join('');
+   };
+</pre>
+
+<h2>5.3. Sincronización Concurrente de Sesiones Activas</h2>
+<p>
+A través de un canal de difusión inter-hilo (<code>BroadcastChannel('scada_presence_channel')</code>) complementado con un pulso de presencia (<em>heartbeat</em>) cada 2.500 ms en <code>localStorage</code>, la plataforma detecta en tiempo real la conexión o desconexión de operadores desde distintas ventanas o puestos de trabajo, caducando automáticamente sesiones inactivas tras 8 segundos de inactividad.
+</p>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 6 -->
+<h1>6. Manual de Instalación, Puesta en Marcha y Operación</h1>
+
+<h2>6.1. Requisitos de Plataforma y Dependencias</h2>
+<ul>
+  <li><strong>Entorno de Ejecución:</strong> Node.js v18.0 o superior con npm v9.0+.</li>
+  <li><strong>Framework y Lenguaje:</strong> React 19.x con TypeScript 5.x / 6.x.</li>
+  <li><strong>Empaquetador y Servidor Local:</strong> Vite 8.x con Tailwind CSS v4.</li>
+  <li><strong>Navegador Recomendado:</strong> Google Chrome 110+, Microsoft Edge 110+, Mozilla Firefox 115+.</li>
+</ul>
+
+<h2>6.2. Procedimiento de Puesta en Marcha Local</h2>
+<ol>
+  <li>Acceder al directorio del proyecto:
+    <pre>cd /root/dev-ia/proyectos/scada-sim-dashboard</pre>
+  </li>
+  <li>Instalar dependencias declaradas en <code>package.json</code>:
+    <pre>npm install</pre>
+  </li>
+  <li>Iniciar el servidor de desarrollo con recarga en caliente (HMR):
+    <pre>npm run dev</pre>
+  </li>
+  <li>Compilar el paquete estático optimizado para despliegue en servidor web HTTPS (*.org):
+    <pre>npm run build</pre>
+    <em>Los binarios resultantes se generan en el directorio <code>dist/</code> listos para producción.</em>
+  </li>
+</ol>
+
+<h2>6.3. Guía de Operación Paso a Paso</h2>
+<ol>
+  <li><strong>Acceso al Sistema:</strong> Iniciar sesión en el portal seleccionando una cuenta autorizada (ej. <code>operador1</code>) o ingresando las credenciales correspondientes.</li>
+  <li><strong>Verificación de Parámetros:</strong> Comprobar en el panel superior que el estado general indique <code>SISTEMA ONLINE</code> y el reloj se encuentre sincronizado.</li>
+  <li><strong>Maniobra de Llenado Manual:</strong>
+    <ul>
+      <li>Presionar el botón <em>"ENCENDER BOMBA"</em>. El indicador LED cambiará de rojo a verde brillante.</li>
+      <li>Deslizar el potenciómetro VFD a <strong>75%</strong> o utilizar los botones de acceso rápido.</li>
+      <li>Observar en el diagrama P&ID la circulación dinámica de fluido y el incremento paulatino de nivel en el Tanque T-101 (+0,5%/s).</li>
+    </ul>
+  </li>
+  <li><strong>Prueba del Lazo Autónomo (Modo AUTO):</strong>
+    <ul>
+      <li>Pulsar la pestaña <em>"Automático"</em>. El sistema desplegará el distintivo verde <code>CONTROL AUTÓNOMO ACTIVO (PLC)</code>.</li>
+      <li>El PLC regulará autónomamente el llenado y vaciado dentro de los umbrales seguros (30% - 88%).</li>
+    </ul>
+  </li>
+  <li><strong>Maniobra de Parada de Emergencia (E-STOP):</strong>
+    <ul>
+      <li>Presionar el botón rojo <em>"E-STOP"</em>. Se generará una alarma sonora y visual en el reactor.</li>
+      <li>La bomba se desenergizará de inmediato. Para reanudar el control, pulsar <em>"Rearmar Sistema (Reset E-STOP)"</em>.</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 7 -->
+<h1>7. Guion Técnico y Cronograma para el Video Explicativo Final (*.mp4)</h1>
+
+<p>
+Para dar cabal cumplimiento a la pauta de evaluación de la cátedra (<strong>Video final *.mp4, plazo máximo 03-12-26</strong>), se estructuró el siguiente guion de exposición técnica cronometrada de 5 minutos:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Bloque de Tiempo</th>
+      <th>Módulo Explicativo</th>
+      <th>Contenido a Exhibir en Pantalla</th>
+      <th>Pauta del Relator (Aspectos Técnicos a Destacar)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>0:00 - 0:45</strong></td>
+      <td>Introducción y Login Seguro</td>
+      <td>Portal de acceso con diseño industrial HMI. Formulario de usuario y clave.</td>
+      <td>Presentar el proyecto bajo la pauta de la asignatura (Pág. 14): plataforma web para 4 usuarios con contraseñas protegidas por SHA-256. Ingresar con <code>operador1</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>0:45 - 1:30</strong></td>
+      <td>Arquitectura HMI y P&ID</td>
+      <td>Vista completa del Dashboard: KPIs superiores, actuadores, sensores y esquema de tuberías.</td>
+      <td>Explicar el lazo industrial según norma ANSI/ISA-5.1: depósito T-101, bomba centrífuga con variador VFD-01, reactor térmico R-20 y los instrumentos LT-101, TT-101, PT-101 y FT-101.</td>
+    </tr>
+    <tr>
+      <td><strong>1:30 - 2:30</strong></td>
+      <td>Física Cuantificable y Operación Manual</td>
+      <td>Ajuste del slider VFD a 100%, 50% y 0%. Gráficas de nivel y temperatura.</td>
+      <td>Demostrar que la simulación es cuantificable: a 50% hay equilibrio exacto (&Delta;L = 0), a 100% llenado rápido (+1%/s) y al reducir potencia se evidencia el enfriamiento progresivo hacia 22°C.</td>
+    </tr>
+    <tr>
+      <td><strong>2:30 - 3:15</strong></td>
+      <td>Alarma Crítica y Protocolo E-STOP</td>
+      <td>Reactor superando los 80°C (banner rojo animado) y pulsación del E-STOP.</td>
+      <td>Explicar la norma ISA-101 de gestión de alarmas. Demostrar el corte seguro bajo IEC 60204-1: despresurización inmediata, apagado de fuerza y enclavamiento de seguridad hasta el rearme.</td>
+    </tr>
+    <tr>
+      <td><strong>3:15 - 4:00</strong></td>
+      <td>Lazo Autónomo PLC (Modo AUTO)</td>
+      <td>Conmutación al modo Automático. El PLC toma el control del variador.</td>
+      <td>Explicar la lógica por histéresis: activación automática al descender a &le; 30% a 75% de potencia y corte por cota máxima al alcanzar &ge; 88%, evitando desbordes sin intervención del operador.</td>
+    </tr>
+    <tr>
+      <td><strong>4:00 - 4:30</strong></td>
+      <td>Concurrencia Multi-pestaña y Rol Supervisor</td>
+      <td>Apertura de una segunda pestaña en paralelo e inicio con usuario <code>supervisor</code>.</td>
+      <td>Demostrar la sincronización en vivo mediante BroadcastChannel (contador de usuarios online) y exhibir la segregación de roles: el supervisor se encuentra bloqueado en modo solo lectura.</td>
+    </tr>
+    <tr>
+      <td><strong>4:30 - 5:00</strong></td>
+      <td>Bitácora de Auditoría y Cierre</td>
+      <td>Sección de logs con buscador y filtros por criticidad (Danger, Warning, Success).</td>
+      <td>Resaltar la trazabilidad completa de cada acción y alarma registrada con marca de tiempo precisa. Conclusión formal dirigida al profesor Michael Silva M.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer-note">
+  Plataforma de Simulación SCADA Industrial v2.4 &bull; Proyecto de Automatización &bull; Universidad Técnica Federico Santa María &bull; Diciembre 2026
+</div>
+
+</body>
+</html>
