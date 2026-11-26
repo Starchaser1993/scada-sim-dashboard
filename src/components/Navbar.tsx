@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useControl } from '../context/ControlContext';
 import { ConnectedUsersBadge } from './ConnectedUsersBadge';
-import { LogOut, Activity, Clock, ShieldAlert, Cpu, UserCheck, Eye } from 'lucide-react';
+import { LogOut, Activity, Clock, ShieldAlert, Cpu, UserCheck } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { currentUser, logout } = useAuth();
@@ -19,28 +19,6 @@ export const Navbar: React.FC = () => {
   }, []);
 
   if (!currentUser) return null;
-
-  const getRolePermissionBadge = (role: string) => {
-    if (role === 'admin') {
-      return (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
-          Control Total
-        </span>
-      );
-    }
-    if (role === 'supervisor') {
-      return (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-1">
-          <Eye className="w-3 h-3" /> Solo Lectura
-        </span>
-      );
-    }
-    return (
-      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-        Control (Sin Auto)
-      </span>
-    );
-  };
 
   return (
     <header className="scada-panel sticky top-0 z-40 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-4 py-3">
@@ -114,10 +92,7 @@ export const Navbar: React.FC = () => {
             </div>
             
             <div className="hidden sm:block text-left">
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm text-slate-200">{currentUser.name}</span>
-                {getRolePermissionBadge(currentUser.role)}
-              </div>
+              <span className="font-bold text-sm text-slate-200 block">{currentUser.name}</span>
               <div className="text-xs text-slate-400 flex items-center gap-1">
                 <UserCheck className="w-3 h-3 text-cyan-400" />
                 {currentUser.roleLabel}

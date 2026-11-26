@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Users, Wifi, ChevronDown, Shield, Sparkles, UserX } from 'lucide-react';
 
 export const ConnectedUsersBadge: React.FC = () => {
-  const { currentUser, connectedUsers, mockUsers, loginAsMockUser } = useAuth();
+  const { currentUser, connectedUsers, mockUsers } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -152,15 +152,6 @@ export const ConnectedUsersBadge: React.FC = () => {
                         <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
                           <UserX className="w-3 h-3 text-slate-600" /> Offline
                         </span>
-                        
-                        {/* Quick switch button for demo testing */}
-                        <button
-                          onClick={() => loginAsMockUser(user.username)}
-                          className="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-900/50 text-slate-300 hover:text-cyan-300 text-[10px] font-mono border border-slate-700 hover:border-cyan-500/40 transition-colors"
-                          title={`Cambiar a sesión de ${user.username}`}
-                        >
-                          Cambiar
-                        </button>
                       </div>
                     </div>
                   ))}

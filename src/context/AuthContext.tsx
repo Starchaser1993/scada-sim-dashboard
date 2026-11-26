@@ -8,7 +8,6 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   mockUsers: User[];
-  loginAsMockUser: (username: string) => { success: boolean; error?: string };
 }
 
 // SHA-256 hash of the default mock password
@@ -201,18 +200,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true };
   };
 
-  const loginAsMockUser = (username: string) => {
-    const userMatch = MOCK_USERS.find(
-      (u) => u.username.toLowerCase() === username.trim().toLowerCase()
-    );
-    if (!userMatch) {
-      return { success: false, error: 'Usuario no encontrado.' };
-    }
-    const { passwordHash: _, ...userWithoutPass } = userMatch;
-    setCurrentUser(userWithoutPass);
-    return { success: true };
-  };
-
   const logout = () => {
     if (currentUser) {
       const currentMap = readActiveSessions();
@@ -233,7 +220,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         mockUsers: publicMockUsers,
-        loginAsMockUser,
       }}
     >
       {children}
