@@ -11,6 +11,7 @@ export const Actuators: React.FC = () => {
   const isEstop = actuators.mode === 'estop';
   const isAuto = actuators.mode === 'auto';
   const isSupervisor = currentUser?.role === 'supervisor';
+  const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="scada-panel rounded-2xl p-6 border border-slate-800 space-y-6 shadow-xl relative overflow-hidden">
@@ -63,8 +64,9 @@ export const Actuators: React.FC = () => {
           <button
             type="button"
             onClick={() => setMode('auto')}
-            disabled={isEstop || isSupervisor}
-            className={`py-2.5 px-3 rounded-lg font-mono text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            disabled={isEstop || !isAdmin}
+            title={!isAdmin ? 'Solo el Administrador puede activar el Modo Automático' : undefined}
+            className={`py-2.5 px-3 rounded-lg font-mono text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               actuators.mode === 'auto'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 border border-emerald-400/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed'

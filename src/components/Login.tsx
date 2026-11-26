@@ -34,7 +34,7 @@ export const Login: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-medium mb-6">
               <Activity className="w-3.5 h-3.5 animate-pulse" />
-              SISTEMA SCADA v2.4 ONLINE
+              SISTEMA SCADA v1.0 ONLINE
             </div>
 
             <h1 className="text-3xl font-extrabold tracking-tight text-white mb-3">
@@ -42,7 +42,7 @@ export const Login: React.FC = () => {
             </h1>
 
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Plataforma web SPA para monitoreo de procesos, control de actuadores, gestión de sensores en tiempo real y bitácora de eventos para 4 usuarios.
+              Plataforma web SPA para monitoreo de procesos, gestión de sensores en tiempo real y bitácora de eventos para 4 usuarios.
             </p>
           </div>
 
@@ -58,10 +58,6 @@ export const Login: React.FC = () => {
               <span>USUARIOS PERMITIDOS:</span>
               <span className="text-cyan-400 font-semibold">4 CUENTAS MOCK</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>FRECUENCIA SENSORES:</span>
-              <span className="text-slate-300">1.0 SEGUNDO</span>
-            </div>
           </div>
         </div>
 
@@ -74,7 +70,6 @@ export const Login: React.FC = () => {
                   <ShieldCheck className="w-5 h-5 text-cyan-400" />
                   Iniciar Sesión
                 </h2>
-                <p className="text-xs text-slate-400">Ingrese sus credenciales de operador o seleccione un usuario de prueba.</p>
               </div>
             </div>
 
@@ -149,7 +144,7 @@ export const Login: React.FC = () => {
                 let permTag = 'Control Total (Manual, Auto, E-STOP)';
                 let permColor = 'text-purple-300 bg-purple-500/20 border-purple-500/30';
                 if (user.role === 'operador1' || user.role === 'operador2' || user.role === 'operador') {
-                  permTag = 'Control Operativo (Manual, Auto, E-STOP)';
+                  permTag = 'Control Operativo (Manual, E-STOP)';
                   permColor = 'text-cyan-300 bg-cyan-500/20 border-cyan-500/30';
                 } else if (user.role === 'supervisor') {
                   permTag = 'Solo Lectura (Monitoreo sin control)';

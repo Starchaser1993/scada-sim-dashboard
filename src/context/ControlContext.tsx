@@ -259,6 +259,7 @@ export const ControlProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     if (mode === 'auto') {
+      if (currentUser?.role !== 'admin') return;
       const userStr = currentUser ? currentUser.username : 'Usuario';
       const shouldPump = sensors.tankLevel < 88;
       addLog(
