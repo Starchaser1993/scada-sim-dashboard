@@ -42,7 +42,7 @@ export const Login: React.FC = () => {
             </h1>
 
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Plataforma web SPA para monitoreo de procesos, gestión de sensores en tiempo real y bitácora de eventos para 4 usuarios.
+              Plataforma web para monitoreo de procesos, gestión de sensores en tiempo real y bitácora de eventos para 4 usuarios.
             </p>
           </div>
 
